@@ -1,0 +1,17 @@
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Large dataset (download separately — see README)
+ASL_Dataset/
+
+# Model file over GitHub's 100 MB limit (train locally or download separately)
+models/static_model.p
+
+# OS files
+.DS_Store
+Thumbs.db

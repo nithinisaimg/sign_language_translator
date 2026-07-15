@@ -1,0 +1,40 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Sign Language Translator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>Real-Time Sign Language Translator</h1>
+
+    <div class="mode-select">
+      <button id="staticBtn" class="active">Static Gestures</button>
+      <button id="dynamicBtn">Dynamic Gestures</button>
+      <button id="retrainBtn">Retrain Models</button>
+    </div>
+
+    <div class="video-area">
+      <img id="video" src="/video_feed/static" alt="video stream">
+    </div>
+
+    <div class="live-prediction">
+      <strong>Live prediction:</strong> <span id="livePrediction">—</span>
+    </div>
+
+    <textarea id="translatedText" placeholder="Translated signs will appear here..."></textarea>
+
+    <div class="controls">
+      <button id="appendBtn">Append Current Prediction</button>
+      <button id="speakBtn">Speak</button>
+      <button id="clearBtn">Clear</button>
+    </div>
+
+    <div id="status" class="status">Status: Ready</div>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
