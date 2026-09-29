@@ -1,40 +1,326 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Sign Language Translator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Language Translator — Vision AI</title>
+  
+  <!-- Modern Google Fonts: Outfit (Display & Body) and JetBrains Mono (Code/HUD) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <div class="container">
-    <h1>Real-Time Sign Language Translator</h1>
+  <!-- Ambient background glow elements -->
+  <div class="bg-glow"></div>
 
-    <div class="mode-select">
-      <button id="staticBtn" class="active">Static Gestures</button>
-      <button id="dynamicBtn">Dynamic Gestures</button>
-      <button id="retrainBtn">Retrain Models</button>
-    </div>
+  <div class="app-shell">
+    <!-- Top Navigation / Header -->
+    <header class="app-header">
+      <div class="brand-area">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path>
+            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
+            <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+          </svg>
+        </div>
+        <div class="brand-titles">
+          <h1>SIGN LANG <span class="brand-sub">TRANSLATOR</span></h1>
+          <p class="brand-caption">Real-Time Computer Vision & Hand Landmark Recognition</p>
+        </div>
+      </div>
 
-    <div class="video-area">
-      <img id="video" src="/video_feed/static" alt="video stream">
-    </div>
+      <!-- Mode Switcher Pill -->
+      <div class="header-actions">
+        <div class="mode-select" role="group" aria-label="Detection Mode">
+          <button id="staticBtn" class="mode-btn active" title="Shortcut: Press 1">
+            <span class="btn-indicator"></span>
+            Static Gestures
+            <kbd class="shortcut-key">1</kbd>
+          </button>
+          <button id="dynamicBtn" class="mode-btn" title="Shortcut: Press 2">
+            <span class="btn-indicator"></span>
+            Dynamic Signs
+            <kbd class="shortcut-key">2</kbd>
+          </button>
+        </div>
 
-    <div class="live-prediction">
-      <strong>Live prediction:</strong> <span id="livePrediction">—</span>
-    </div>
+        <div class="secondary-actions">
+          <button id="guideBtn" class="tool-btn" title="View ASL Alphabet Reference Guide">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <span>Signs Guide</span>
+          </button>
+          <button id="retrainBtn" class="tool-btn danger-hover" title="Retrain Static and Dynamic Models">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+            </svg>
+            <span>Retrain</span>
+          </button>
+        </div>
+      </div>
+    </header>
 
-    <textarea id="translatedText" placeholder="Translated signs will appear here..."></textarea>
+    <!-- Main Workspace Layout -->
+    <main class="main-content">
+      <!-- Left Column: Vision Feed & Live Detection -->
+      <section class="card vision-card">
+        <div class="card-header">
+          <div class="header-tag">
+            <span class="pulse-dot"></span>
+            <span class="tag-text">LIVE VISION FEED</span>
+          </div>
+          <div class="feed-telemetry">
+            <span id="currentModeBadge" class="hud-badge">STATIC MODE</span>
+            <span id="fpsBadge" class="hud-badge secondary">30 FPS</span>
+          </div>
+        </div>
 
-    <div class="controls">
-      <button id="appendBtn">Append Current Prediction</button>
-      <button id="speakBtn">Speak</button>
-      <button id="clearBtn">Clear</button>
-    </div>
+        <div class="video-area">
+          <!-- Cyber HUD corner brackets -->
+          <div class="hud-bracket top-left"></div>
+          <div class="hud-bracket top-right"></div>
+          <div class="hud-bracket bottom-left"></div>
+          <div class="hud-bracket bottom-right"></div>
+          
+          <img id="video" src="/video_feed/static" alt="Real-time webcam video stream with hand landmarks">
+          
+          <div class="video-overlay-controls">
+            <button id="freezeBtn" class="overlay-btn" title="Pause / Resume Live Feed View">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm">
+                <rect x="6" y="4" width="4" height="16"></rect>
+                <rect x="14" y="4" width="4" height="16"></rect>
+              </svg>
+              <span>Pause</span>
+            </button>
+            <button id="snapshotBtn" class="overlay-btn" title="Download Current Frame Snapshot">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+              <span>Snap</span>
+            </button>
+          </div>
+        </div>
 
-    <div id="status" class="status">Status: Ready</div>
+        <!-- Live Prediction Display Bar -->
+        <div class="prediction-module">
+          <div class="prediction-header">
+            <div class="module-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+              <span>CURRENT PREDICTION</span>
+            </div>
+            <div class="stability-tracker">
+              <span class="stability-label">STABILITY</span>
+              <div class="stability-meter">
+                <div id="stabilityProgress" class="meter-bar" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="live-prediction-banner">
+            <span class="prediction-prefix">ACTIVE SIGN:</span>
+            <div class="prediction-value-wrapper">
+              <span id="livePrediction" class="prediction-text">—</span>
+            </div>
+            <button id="quickAppendBtn" class="quick-append-action" title="Append to buffer (Space)">
+              + Append
+            </button>
+          </div>
+
+          <!-- Recent gestures chips -->
+          <div class="recent-gestures">
+            <span class="recent-label">RECENT:</span>
+            <div id="recentChips" class="chips-row">
+              <span class="empty-chip">No recent signs</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Speech & Translation Workspace -->
+      <section class="card translation-card">
+        <div class="card-header">
+          <div class="header-tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span class="tag-text">TRANSLATION BUFFER</span>
+          </div>
+          
+          <div class="auto-append-wrapper">
+            <label class="toggle-control" title="Automatically append stable signs to the text buffer">
+              <input type="checkbox" id="autoAppendToggle" checked>
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">Auto-Append</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="editor-container">
+          <textarea id="translatedText" placeholder="Signs recognized by the model will formulate here in real time... Or type manually." spellcheck="false"></textarea>
+          
+          <!-- Textarea Stats Bar -->
+          <div class="editor-meta">
+            <div class="meta-item">
+              <span class="meta-key">WORDS:</span>
+              <span id="wordCount" class="meta-val">0</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-key">CHARS:</span>
+              <span id="charCount" class="meta-val">0</span>
+            </div>
+            <button id="copyBtn" class="action-link" title="Copy text to clipboard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-xs">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy Buffer</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Action Control Buttons -->
+        <div class="controls">
+          <button id="appendBtn" class="action-btn primary" title="Shortcut: Press Space">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Append Sign</span>
+            <kbd class="shortcut-pill">Space</kbd>
+          </button>
+
+          <button id="speakBtn" class="action-btn accent" title="Shortcut: Press Enter">
+            <div class="speak-anim-bars" id="speakAnim">
+              <span></span><span></span><span></span><span></span>
+            </div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon speak-icon">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            <span>Speak Out</span>
+            <kbd class="shortcut-pill">Enter</kbd>
+          </button>
+
+          <button id="clearBtn" class="action-btn ghost" title="Shortcut: Press Escape">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Clear</span>
+            <kbd class="shortcut-pill">Esc</kbd>
+          </button>
+        </div>
+
+        <!-- Audio & TTS Options Drawer -->
+        <div class="tts-options-panel">
+          <div class="panel-row">
+            <label for="ttsRate" class="range-label">
+              <span>Speech Speed:</span>
+              <span id="rateValue">1.0x</span>
+            </label>
+            <input type="range" id="ttsRate" min="0.5" max="1.5" step="0.1" value="1.0">
+          </div>
+          <div class="panel-row">
+            <label class="toggle-control small">
+              <input type="checkbox" id="soundFxToggle" checked>
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">Interface Sound FX</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Keyboard Shortcuts Legend -->
+        <div class="keyboard-legend">
+          <div class="legend-header">QUICK SHORTCUTS</div>
+          <div class="legend-grid">
+            <div class="legend-item"><kbd>Space</kbd> <span>Append</span></div>
+            <div class="legend-item"><kbd>Enter</kbd> <span>Speak</span></div>
+            <div class="legend-item"><kbd>Esc</kbd> <span>Clear</span></div>
+            <div class="legend-item"><kbd>1</kbd> <span>Static</span></div>
+            <div class="legend-item"><kbd>2</kbd> <span>Dynamic</span></div>
+            <div class="legend-item"><kbd>C</kbd> <span>Copy</span></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom System Status & Telemetry Bar -->
+    <footer class="system-footer">
+      <div class="footer-left">
+        <span class="connection-status">
+          <span class="status-indicator-dot online"></span>
+          <span id="status" class="status-text">Status: Ready</span>
+        </span>
+      </div>
+      <div class="footer-center">
+        <span class="model-spec">MediaPipe Hands • Scikit-Learn Classifier</span>
+      </div>
+      <div class="footer-right">
+        <span class="engine-badge">PyTorch / MediaPipe Vision</span>
+      </div>
+    </footer>
   </div>
 
+  <!-- Sign Language Reference Modal -->
+  <div id="guideModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h2 class="modal-title">ASL Alphabet & Sign Reference</h2>
+          <p class="modal-sub">Recognized static gestures (A-Z) and gestures in the current model</p>
+        </div>
+        <button id="closeModalBtn" class="modal-close-btn" aria-label="Close Guide">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="alphabet-grid">
+          <div class="sign-card"><span class="sign-char">A</span><span class="sign-desc">Fist with thumb resting along side of index</span></div>
+          <div class="sign-card"><span class="sign-char">B</span><span class="sign-desc">Four fingers up, thumb folded across palm</span></div>
+          <div class="sign-card"><span class="sign-char">C</span><span class="sign-desc">Curved hand shaped like letter C</span></div>
+          <div class="sign-card"><span class="sign-char">D</span><span class="sign-desc">Index up, other fingers touch thumb in O shape</span></div>
+          <div class="sign-card"><span class="sign-char">E</span><span class="sign-desc">Fingers curled inward, thumb tucked under</span></div>
+          <div class="sign-card"><span class="sign-char">F</span><span class="sign-desc">Index and thumb form circle, 3 fingers up</span></div>
+          <div class="sign-card"><span class="sign-char">G</span><span class="sign-desc">Index and thumb pointing horizontally</span></div>
+          <div class="sign-card"><span class="sign-char">H</span><span class="sign-desc">Index and middle finger extended horizontally</span></div>
+          <div class="sign-card"><span class="sign-char">I</span><span class="sign-desc">Pinky straight up, other fingers in fist</span></div>
+          <div class="sign-card"><span class="sign-char">K</span><span class="sign-desc">Index up, middle forward, thumb between them</span></div>
+          <div class="sign-card"><span class="sign-char">L</span><span class="sign-desc">Index and thumb extended in L-shape</span></div>
+          <div class="sign-card"><span class="sign-char">M</span><span class="sign-desc">Three fingers over thumb in closed fist</span></div>
+          <div class="sign-card"><span class="sign-char">N</span><span class="sign-desc">Two fingers over thumb in closed fist</span></div>
+          <div class="sign-card"><span class="sign-char">O</span><span class="sign-desc">All fingertips touching thumb forming O</span></div>
+          <div class="sign-card"><span class="sign-char">P</span><span class="sign-desc">K hand held pointing downward</span></div>
+          <div class="sign-card"><span class="sign-char">Q</span><span class="sign-desc">G hand held pointing downward</span></div>
+          <div class="sign-card"><span class="sign-char">R</span><span class="sign-desc">Index and middle fingers crossed</span></div>
+          <div class="sign-card"><span class="sign-char">S</span><span class="sign-desc">Closed fist with thumb across front of fingers</span></div>
+          <div class="sign-card"><span class="sign-char">T</span><span class="sign-desc">Thumb between index and middle finger</span></div>
+          <div class="sign-card"><span class="sign-char">U</span><span class="sign-desc">Index and middle fingers together upright</span></div>
+          <div class="sign-card"><span class="sign-char">V</span><span class="sign-desc">Index and middle fingers spread in V-shape</span></div>
+          <div class="sign-card"><span class="sign-char">W</span><span class="sign-desc">Index, middle, and ring fingers spread upward</span></div>
+          <div class="sign-card"><span class="sign-char">X</span><span class="sign-desc">Index finger crooked into hook shape</span></div>
+          <div class="sign-card"><span class="sign-char">Y</span><span class="sign-desc">Thumb and pinky extended (shaka sign)</span></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <p class="guide-tip">Tip: Hold hand steadily within the camera view at 1.5-3 feet distance for optimal landmark tracking.</p>
+        <button id="guideGotItBtn" class="modal-confirm-btn">Got It</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Application Logic -->
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
